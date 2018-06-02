@@ -11,102 +11,14 @@ $(function () {
     // 初始化页面脚本
     oExports.initialize();
 
-    function detail_index() {
-    var oExports = {
-        initialize: fInitialize,
-        encode: fEncode
-    };
-    oExports.initialize();
-
-    function fInitialize() {
-        var that = this;
-
-        var num = $('ul.discuss-list');
-        for (i = 1; i <= num.length; i++){
-            //var sImageId = $('#js-image-id-' + i);
-            //console.log(sImageId.val())
-            //var oCmtIpt = $('#jsCmt-' + i);
-            //var oListDv = $('#js-discuss-list-' + i);
-
-            // 点击添加评论
-            var bSubmit = false;
-            $('#jsSubmit-' + i).unbind();
-            $('#jsSubmit-' + i).on('click', function () {
-                var control_id = $(this).attr('id')
-                var id = control_id.substring(9)
-                console.log(id)
-                var sImageId = $('#js-image-id-' + id).val();
-                console.log(sImageId)
-                var oCmtIpt = $('#jsCmt-' + id);
-                console.log(oCmtIpt.val())
-                var oListDv = $('.js-discuss-list-' + id);
-
-                //var sCmt = $.trim(oCmtIpt.val());
-                //alert(sCmt)
-                sCmt = oCmtIpt.val()
-                console.log(sCmt)
-                // 评论为空不能提交
-                if (!sCmt) {
-                    console.log('pinglun: ' + id + oCmtIpt.attr('id'))
-                    return alert('评论不能为空');
-                    //continue;
-                }
-                // 上一个提交没结束之前，不再提交新的评论
-                if (bSubmit) {
-                    return;
-                }
-                bSubmit = true;
-                $.ajax({
-                    url: '/addcomment/',
-                    type: 'post',
-                    dataType: 'json',
-                    data: {image_id: sImageId, content: sCmt}
-                }).done(function (oResult) {
-                    if (oResult.code !== 0) {
-                        return alert(oResult.msg || '提交失败，请重试');
-                    }
-                    // 清空输入框
-                    oCmtIpt.val('');
-                    // 渲染新的评论
-                    var sHtml = [
-                        '<li>',
-                            '<a class="_4zhc5 _iqaka" title="', that.encode(oResult.username), '" href="/profile/', oResult.user_id, '">', that.encode(oResult.username), '</a> ',
-                            '<span><span>', that.encode(sCmt), '</span></span>',
-                        '</li>'].join('');
-                    oListDv.prepend(sHtml);
-
-                    // 修改评论数
-                    var counts = $(".length-" + id).text()
-                    $(".length-" + id).text(parseInt(counts, 10) + 1);
-
-                }).fail(function (oResult) {
-                    alert(oResult.msg || '提交失败，请重试');
-                }).always(function () {
-                    bSubmit = false;
-                });
-            });
-        }
-    }
-
-    function fEncode(sStr, bDecode) {
-        var aReplace =["&#39;", "'", "&quot;", '"', "&nbsp;", " ", "&gt;", ">", "&lt;", "<", "&amp;", "&", "&yen;", "¥"];
-        !bDecode && aReplace.reverse();
-        for (var i = 0, l = aReplace.length; i < l; i += 2) {
-             sStr = sStr.replace(new RegExp(aReplace[i],'g'), aReplace[i+1]);
-        }
-        return sStr;
-    };
-
-}
-
     function fInitialize() {
         var that = this;
         // 常用元素
         that.listEl = $('div.js-image-list');
         // 初始化数据
-        //that.uid = window.uid;
+        that.uid = window.uid;
         that.page = 1;
-        that.pageSize = 5;
+        that.pageSize = 10;
         that.listHasNext = true;
         // 绑定事件
         $('.js-load-more').on('click', function (oEvent) {
@@ -148,7 +60,7 @@ $(function () {
                     sHtml_part1_1 = that.tpl([
                          '<article class="mod">',
             '<header class="mod-hd">',
-                '<time class="time">#{ image.create_date }</time>',
+                '<time class="time">#{ created_date }</time>',
                 '<a href="/profile/#{image_user_id}" class="avatar">',
                  '   <img src="#{image_user_head_url}">',
                 '</a>',
@@ -166,23 +78,10 @@ $(function () {
               '  <ul class="discuss-list">',
                    ' <li class="more-discuss">',
                        ' <a>',
-                           ' <span>全部 </span><span class="length-'].join(''), oImage);
-
-                    sHtml_part1_2 = that.tpl([
-                        '">#{image_comments_length}</span>',
+                           ' <span>全部 </span><span class="length-">#{image_comments_length}</span>',
                             '<span> 条评论</span></a>',
                     '</li>',
-                    '<div class = "js-discuss-list-',
-            ].join(''), oImage);
-
-                    sHtml_part1_3 = that.tpl(['"></div>',
-                    ].join(''), oImage);
-
-                    //var cur_page_id = page * pageSize + nIndex;
-                    console.log((that.page - 1) * that.pageSize + nIndex);
-                    var cur_page_id = (that.page - 1) * that.pageSize + nIndex + 1;
-                    sHtml_part1 = sHtml_part1_1 + cur_page_id.toString() +  sHtml_part1_2 +
-                        cur_page_id.toString() +  sHtml_part1_3;
+                    '<div class = "js-discuss-list-#{image_id}">'].join(''), oImage);
 
 
                     sHtml_part2 = ' ';
@@ -200,36 +99,19 @@ $(function () {
                          '   </li>',
                              ].join(''), dict);
                     }
-
-                    sHtml_part3_1 =    that.tpl([
+                    sHtml_part3 =    that.tpl([
+                        '</div>',
               '  </ul>',
-                '<section class="discuss-edit">',
-                    '<a class="icon-heart"></a>',
-                    '<form>',
-                        '<input placeholder="添加评论..." id = "jsCmt-',
-                    ].join(''), oImage);
-
-                    sHtml_part3_2 = that.tpl([
-                        '" type="text">',
-                        '<input id = "js-image-id-',
-                         ].join(''), oImage);
-
-                    sHtml_part3_3 = that.tpl([
-                        '" type = "text" style="display: none" value="#{image_id}">',
-                    '</form>',
-                    '<button class="more-info" id = "jsSubmit-'
-                        ].join(''), oImage);
-
-                    sHtml_part3_4 = that.tpl([
-                        '">更多选项</button>',
+               '<section class="discuss-edit">',
+                  '<a class="icon-heart-empty"></a>',
+                   '<form>',
+                   ' <input placeholder="添加评论..." id="jsCmt-#{image_id}" type="text">',
+                   ' <button class="more-info" id="jsSubmit-#{image_id}" >更多选项</button>',
                 '</section>',
            ' </div>',
+
        ' </article>  '
                     ].join(''), oImage);
-
-                    sHtml_part3 = sHtml_part3_1 + cur_page_id.toString() +  sHtml_part3_2 +
-                        cur_page_id.toString() +  sHtml_part3_3 +
-                        cur_page_id.toString() +  sHtml_part3_4;
 
 
                     sHtml += sHtml_part1 + sHtml_part2 + sHtml_part3;
@@ -242,7 +124,6 @@ $(function () {
             always: fCb
         });
 
-        setTimeout(detail_index, 1000);
     }
 
     function fRequestData(oConf) {

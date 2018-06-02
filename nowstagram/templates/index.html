@@ -8,6 +8,7 @@
 {% endblock%}
 {% block css %}/static/styles/pages/index.css{% endblock%}
 {% block content %}
+
     <div class="page-main clearfix js-image-list">
         {% for image in images %}
         <article class="mod">
@@ -80,19 +81,20 @@
             </div>
         </article>
         {% endfor %}
-
-        <div class="more-content js-load-more">
-        <a class="_oidfu" href="javascript:void(0);">更多</a>
     </div>
-
+    <div class="more-content js-load-more">
+        <a class="_oidfu" href="javascript:void(0);">更多</a>
     </div>
 
 {% endblock%}
 
 {% block js %}
 <script type="text/javascript">
-    window.uid = None;
+    window.uid = 1;
 </script>
+<script type="text/javascript" src="/static/js/index.js"></script>
 <script type="text/javascript" src="/static/js/jquery.js"></script>
 <script type="text/javascript" src="/static/js/index_cmt.js"></script>
 {% endblock%}
+
+
