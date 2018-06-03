@@ -10,33 +10,9 @@ from nowstagram.qiniusdk import qiniu_upload_file
 @app.route('/')
 def index():
     #首页
-    images = Image.query.order_by(db.desc(Image.id)).limit(10).all()
+    images = Image.query.order_by(db.desc(Image.id)).limit(5).all()
     return render_template('index.html', images=images)
 
-# 首页ajax 的json 数据
-@app.route('/index/images/<int:page>/<int:per_page>/')
-def index_images(page, per_page):
-    paginate = Image.query.order_by(db.desc(Image.id)).paginate(page=page, per_page=per_page, error_out=False)
-    map = {'has_next': paginate.has_next}
-    images = []
-    for image in paginate.items:
-        comments = []
-        for i in range(0, min(2, len(image.comments))):
-            comment = image.comments[i]
-            comments.append({'username':comment.user.username,
-                             'user_id':comment.user_id,
-                             'content':comment.content})
-        imgvo = {'id': image.id,
-                 'url': image.url,
-                 'comment_count': len(image.comments),
-                 'user_id': image.user_id,
-                 'head_url':image.user.head_url,
-                 'created_date':str(image.created_date),
-                 'comments':comments}
-        images.append(imgvo)
-
-    map['images'] = images
-    return json.dumps(map)
 
 
 @app.route('/image/<int:image_id>/')
@@ -56,6 +32,8 @@ def profile(user_id):
     paginate=Image.query.filter_by(user_id=user_id).order_by(db.desc(Image.created_date)).paginate(page=1,per_page=3,error_out=False)
     return render_template('profile.html', user = user,images=paginate.items,has_next=paginate.has_next)
 
+
+
 @app.route('/profile/images/<int:user_id>/<int:page>/<int:per_page>/')
 #个人详情页ajax请求json
 def user_images(user_id,page,per_page):
@@ -67,6 +45,35 @@ def user_images(user_id,page,per_page):
         images.append(imgvo)
     map['images']=images
     return json.dumps(map)
+
+
+# 首页ajax 的json 数据
+@app.route('/index/images/<int:page>/<int:per_page>/')
+def index_images(page, per_page):
+    paginate = Image.query.order_by(db.desc(Image.id)).paginate(page=page, per_page=per_page, error_out=False)
+    map = {'has_next': paginate.has_next}
+    images = []
+    for image in paginate.items:
+        comments = []
+        for i in range(0, min(2, len(image.comments))):
+            comment = image.comments[i]
+            comments.append({'comment_username':comment.user.username,
+                             'user_id':comment.user_id,
+                             'content':comment.content})
+        imgvo = {'id': image.id,
+                 'url': image.url,
+                 'comment_count': len(image.comments),
+                 'user_id': image.user_id,
+                 "user_name":image.user.username,
+                 'head_url':image.user.head_url,
+                 'created_date':str(image.created_date),
+                 'comments':comments}
+        images.append(imgvo)
+
+    map['images'] = images
+    return json.dumps(map)
+
+
 
 #登录注册页
 @app.route('/regloginpage/')

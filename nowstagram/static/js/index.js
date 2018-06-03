@@ -16,9 +16,9 @@ $(function () {
         // 常用元素
         that.listEl = $('div.js-image-list');
         // 初始化数据
-        that.uid = window.uid;
+        //that.uid = window.uid;
         that.page = 1;
-        that.pageSize = 10;
+        that.pageSize = 5;
         that.listHasNext = true;
         // 绑定事件
         $('.js-load-more').on('click', function (oEvent) {
@@ -57,38 +57,44 @@ $(function () {
                 // 渲染数据
                 var sHtml = '';
                 $.each(oResult.images, function (nIndex, oImage) {
-                    sHtml_part1_1 = that.tpl([
+
+            sHtml_part1 = that.tpl([
                          '<article class="mod">',
             '<header class="mod-hd">',
-                '<time class="time">#{ created_date }</time>',
-                '<a href="/profile/#{image_user_id}" class="avatar">',
-                 '   <img src="#{image_user_head_url}">',
+                '<time class="time">#{created_date}</time>',
+                '<a href="/profile/#{user_id}" class="avatar">',
+                 '   <img src="#{head_url}">',
                 '</a>',
                 '<div class="profile-info">',
-                    '<a title="#{image_user_username}" href="/profile/#{image_user_id}">#{image_user_username}</a>',
+                    '<a title="#{user_name}" href="/profile/#{user_id}">#{user_name}</a>',
                 '</div>',
             '</header>',
             '<div class="mod-bd">',
                 '<div class="img-box">',
-                    '<a href = "/image/#{image_id}">',
-                    '<img src="#{image_url}">',
+                    '<a href = "/image/#{id}">',
+                    '<img src="#{url}">',
                ' </div>',
            ' </div>',
            ' <div class="mod-ft">',
               '  <ul class="discuss-list">',
                    ' <li class="more-discuss">',
                        ' <a>',
-                           ' <span>全部 </span><span class="length-">#{image_comments_length}</span>',
+                           ' <span>全部</span><span class="">#{image_comments_length}</span>',
+                            '<span>条评论</span></a>',
+                    '</li>',
+                    '<div class="js-comment-list-#{id}">'].join(''), oImage);
+                    sHtml_part1_2 = that.tpl([
+                        '">#{comment_count}</span>',
                             '<span> 条评论</span></a>',
                     '</li>',
-                    '<div class = "js-discuss-list-#{image_id}">'].join(''), oImage);
-
+                    '<div class = "js-discuss-list-',
+            ].join(''), oImage);
 
                     sHtml_part2 = ' ';
 
-                    for (var ni = 0; ni < oImage.image_comments_length; ni++){
-                        dict = {'comment_user_username':oImage.comment_user_username[ni], 'comment_user_id':oImage.comment_user_id[ni],
-                            'comment_content':oImage.comment_content[ni] };
+                    for (var ni = 0; ni < Math.min(2,oImage.comment_count); ni++){
+                        dict = {'comment_user_username':oImage.comments[ni].comment_username, 'comment_user_id':oImage.comments[ni].user_id,
+                            'comment_content':oImage.comments[ni].content };
 
                         sHtml_part2 += that.tpl([
                         '    <li>',
@@ -99,20 +105,19 @@ $(function () {
                          '   </li>',
                              ].join(''), dict);
                     }
+
                     sHtml_part3 =    that.tpl([
                         '</div>',
               '  </ul>',
                '<section class="discuss-edit">',
                   '<a class="icon-heart-empty"></a>',
-                   '<form>',
                    ' <input placeholder="添加评论..." id="jsCmt-#{image_id}" type="text">',
-                   ' <button class="more-info" id="jsSubmit-#{image_id}" >更多选项</button>',
+                   ' <button class="more-info" id="jsSubmit-#{image_id}" content="我真的不知道如何搞啊！" onclick=addcomment(this)>更多选项</button>',
                 '</section>',
            ' </div>',
 
        ' </article>  '
                     ].join(''), oImage);
-
 
                     sHtml += sHtml_part1 + sHtml_part2 + sHtml_part3;
                 });
@@ -123,6 +128,7 @@ $(function () {
             },
             always: fCb
         });
+
 
     }
 
