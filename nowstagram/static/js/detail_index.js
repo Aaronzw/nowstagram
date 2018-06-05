@@ -10,26 +10,21 @@ $(function () {
 
         var num = $('ul.discuss-list');
         for (i = 1; i <= num.length; i++){
-            //var sImageId = $('#js-image-id-' + i);
-            //console.log(sImageId.val())
-            //var oCmtIpt = $('#jsCmt-' + i);
-            //var oListDv = $('#js-discuss-list-' + i);
 
             // 点击添加评论
             var bSubmit = false;
             $('#jsSubmit-' + i).unbind();
             $('#jsSubmit-' + i).on('click', function () {
-                var control_id = $(this).attr('id')
+                var control_id = $(this).attr('id')//jsSubmit-1
+                console.log('control_id.'+control_id)
                 var id = control_id.substring(9)
-                console.log(id)
-                var sImageId = $('#js-image-id-' + id).val();
-                console.log(sImageId)
+                console.log('id'+id)//id 1
+                var sImageId = $('#js-image-id-' + id).val();//700
+                console.log('simage2.'+sImageId)
                 var oCmtIpt = $('#jsCmt-' + id);
                 console.log(oCmtIpt.val())
                 var oListDv = $('.js-discuss-list-' + id);
 
-                //var sCmt = $.trim(oCmtIpt.val());
-                //alert(sCmt)
                 sCmt = oCmtIpt.val()
                 console.log(sCmt)
                 // 评论为空不能提交

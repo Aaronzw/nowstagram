@@ -185,11 +185,17 @@ def view_image(image_name):
 @app.route('/addcomment/', methods={'post'})
 @login_required
 def add_comment():
+    print(request.values['image_id'])
     image_id = int(request.values['image_id'])
     content = request.values['content']
+    print(image_id)
+    # print(type(image_id))
+    # image_id=int(image_id)
+    # print(type(image_id))
     comment = Comment(content, image_id, current_user.id)
     db.session.add(comment)
     db.session.commit()
+
     return json.dumps({"code":0, "id":comment.id,
                        "content":comment.content,
                        "username":comment.user.username,

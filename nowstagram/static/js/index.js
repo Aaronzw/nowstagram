@@ -10,6 +10,91 @@ $(function () {
     };
     // 初始化页面脚本
     oExports.initialize();
+function detail_index() {
+    var oExports = {
+        initialize: fInitialize,
+        encode: fEncode
+    };
+    oExports.initialize();
+
+    function fInitialize() {
+        var that = this;
+
+        var num = $('ul.discuss-list');
+        for (i = 1; i <= num.length; i++){
+
+            // 点击添加评论
+            var bSubmit = false;
+            $('#jsSubmit-' + i).unbind();
+            $('#jsSubmit-' + i).on('click', function () {
+                var control_id = $(this).attr('id')
+                var id = control_id.substring(9)
+                console.log(id)
+                var sImageId = $('#js-image-id-' + id).val();
+                console.log('simage1.'+sImageId)
+                var oCmtIpt = $('#jsCmt-' + id);
+                console.log(oCmtIpt.val())
+                var oListDv = $('.js-discuss-list-' + id);
+
+                sCmt = oCmtIpt.val()
+                console.log(sCmt)
+                // 评论为空不能提交
+                if (!sCmt) {
+                    console.log('pinglun: ' + id + oCmtIpt.attr('id'))
+                    return alert('评论不能为空');
+                    //continue;
+                }
+                // 上一个提交没结束之前，不再提交新的评论
+                if (bSubmit) {
+                    return;
+                }
+                bSubmit = true;
+                $.ajax({
+                    url: '/addcomment/',
+                    type: 'post',
+                    dataType: 'json',
+                    data: {image_id: sImageId, content: sCmt}
+                }).done(function (oResult) {
+                    if (oResult.code !== 0) {
+                        console.log('2,'+oResult.code+' '+oResult.msg)
+                        return alert(oResult.msg|| '提交失败，请重试' );
+                    }
+                    // 清空输入框
+                    oCmtIpt.val('');
+                    // 渲染新的评论
+                    var sHtml = [
+                        '<li>',
+                            '<a class="_4zhc5 _iqaka" title="', that.encode(oResult.username), '" href="/profile/', oResult.user_id, '">', that.encode(oResult.username), '</a> ',
+                            '<span><span>', that.encode(sCmt), '</span></span>',
+                        '</li>'].join('');
+                    oListDv.prepend(sHtml);
+
+                    // 修改评论数
+                    var counts = $(".length-" + id).text()
+                    $(".length-" + id).text(parseInt(counts, 10) + 1);
+
+                }).fail(function (oResult) {
+                    console.log('1,'+oResult.code+' '+oResult.msg)
+                    alert(oResult.msg || '提交失败，请重试' );
+
+                }).always(function () {
+                    bSubmit = false;
+                });
+            });
+        }
+    }
+
+    function fEncode(sStr, bDecode) {
+        var aReplace =["&#39;", "'", "&quot;", '"', "&nbsp;", " ", "&gt;", ">", "&lt;", "<", "&amp;", "&", "&yen;", "¥"];
+        !bDecode && aReplace.reverse();
+        for (var i = 0, l = aReplace.length; i < l; i += 2) {
+             sStr = sStr.replace(new RegExp(aReplace[i],'g'), aReplace[i+1]);
+        }
+        return sStr;
+    };
+
+}
+
 
     function fInitialize() {
         var that = this;
@@ -57,7 +142,7 @@ $(function () {
                 // 渲染数据
                 var sHtml = '';
                 $.each(oResult.images, function (nIndex, oImage) {
-
+            var cur_page_id = (that.page - 1) * that.pageSize + nIndex + 1;
             sHtml_part1 = that.tpl([
                          '<article class="mod">',
             '<header class="mod-hd">',
@@ -77,19 +162,15 @@ $(function () {
            ' </div>',
            ' <div class="mod-ft">',
               '  <ul class="discuss-list">',
-                   ' <li class="more-discuss">',
+                   ' <li class="more-discuss js-discuss-list">',
                        ' <a>',
-                           ' <span>全部</span><span class="">#{image_comments_length}</span>',
+                           '<a href = "/image/{{image.id}}">',
+                           ' <span>全部</span><span class="">#{comment_count}</span>',
                             '<span>条评论</span></a>',
                     '</li>',
-                    '<div class="js-comment-list-#{id}">'].join(''), oImage);
-                    sHtml_part1_2 = that.tpl([
-                        '">#{comment_count}</span>',
-                            '<span> 条评论</span></a>',
-                    '</li>',
-                    '<div class = "js-discuss-list-',
-            ].join(''), oImage);
-
+                    '<div class="js-discuss-list-',
+                cur_page_id.toString(),
+                '"> </div>'].join(''), oImage);
                     sHtml_part2 = ' ';
 
                     for (var ni = 0; ni < Math.min(2,oImage.comment_count); ni++){
@@ -111,8 +192,17 @@ $(function () {
               '  </ul>',
                '<section class="discuss-edit">',
                   '<a class="icon-heart-empty"></a>',
-                   ' <input placeholder="添加评论..." id="jsCmt-#{image_id}" type="text">',
-                   ' <button class="more-info" id="jsSubmit-#{image_id}" content="我真的不知道如何搞啊！" onclick=addcomment(this)>更多选项</button>',
+                   '<form>',
+                   ' <input placeholder="添加评论..." id="jsCmt-',
+                        cur_page_id.toString(),
+                        '" type="text">',
+                   '<input id = "js-image-id-',
+                        cur_page_id.toString(),
+                        '" type = "text" style="display: none" value="#{id}">',
+                   '</form>',
+                   ' <button class="more-info" id="jsSubmit-',
+                        cur_page_id.toString(),
+                        '">更多选项</button>',
                 '</section>',
            ' </div>',
 
@@ -128,8 +218,7 @@ $(function () {
             },
             always: fCb
         });
-
-
+        setTimeout(detail_index, 1000);
     }
 
     function fRequestData(oConf) {
