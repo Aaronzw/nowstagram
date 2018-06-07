@@ -25,5 +25,17 @@ def qiniu_upload_file(source_file, save_file_name):
         return (domain_prefix + save_file_name)
 
     return None
+def upload_localfile(source_file_name, save_file_name):
+    # key上传到七牛后保存的文件名
+    # 生成上传 Token，可以指定过期时间等
+    token = q.upload_token(bucket_name, save_file_name, 3600)
+    # 要上传文件的本地路径
+
+    ret, info = put_file(token, save_file_name, source_file_name)
+    #print(info)
+    if info.status_code == 200:
+        #print(domain_prefix + save_file_name)
+        return (domain_prefix + save_file_name)
+    return None
 
 

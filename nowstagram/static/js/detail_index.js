@@ -1,3 +1,4 @@
+//首页前n条评论功能的实现
 $(function () {
     var oExports = {
         initialize: fInitialize,

@@ -11,6 +11,7 @@ $(function () {
     // 初始化页面脚本
     oExports.initialize();
 function detail_index() {
+    //展开后条目评论功能的实现
     var oExports = {
         initialize: fInitialize,
         encode: fEncode
@@ -27,10 +28,10 @@ function detail_index() {
             var bSubmit = false;
             $('#jsSubmit-' + i).unbind();
             $('#jsSubmit-' + i).on('click', function () {
-                var control_id = $(this).attr('id')
+                var control_id = $(this).attr('id')//jsSubmit-n  首页的第n条
                 var id = control_id.substring(9)
                 console.log(id)
-                var sImageId = $('#js-image-id-' + id).val();
+                var sImageId = $('#js-image-id-' + id).val();//联系index.html image在数据库中的编号
                 console.log('simage1.'+sImageId)
                 var oCmtIpt = $('#jsCmt-' + id);
                 console.log(oCmtIpt.val())
@@ -97,6 +98,7 @@ function detail_index() {
 
 
     function fInitialize() {
+    //首页更多条目ajax请求
         var that = this;
         // 常用元素
         that.listEl = $('div.js-image-list');
