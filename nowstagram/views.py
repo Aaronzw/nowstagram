@@ -11,6 +11,7 @@ from nowstagram.qiniusdk import qiniu_upload_file
 def index():
     #首页
     images = Image.query.order_by(db.desc(Image.id)).limit(5).all()
+
     return render_template('index.html', images=images)
 
 
@@ -92,7 +93,7 @@ def redirect_with_msg(target, msg, category):
 
 @app.route('/login/',methods={'post','get'})
 def login():
-    #注册账号
+    #登录账号
     username = request.values.get('username').strip()
     password = request.values.get('password').strip()
 
