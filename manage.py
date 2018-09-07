@@ -9,6 +9,7 @@ manager = Manager(app)
 
 @manager.command
 #python manage.py init_database_king
+#herolsit.json文件提取url，注意文件是json格式才行，json-withBOM不行，需要sublime转换
 def init_database_king():
     urls=get_upload_url()
     print(urls)
@@ -58,7 +59,7 @@ def run_test():
     #python manage.py upload_local_to_qiniu
 def upload_local_to_qiniu():
     path = os.getcwd() + "\King\\"
-    print(path)
+    #print(path)
     for root, dirs, files in os.walk(path):
         for source_file in files:
             #print(source_file)
@@ -76,7 +77,7 @@ def upload_local_to_qiniu():
 def get_upload_url():
     urls=[]
     path = os.getcwd() + "\King\\"
-    print(path)
+    #print(path)
     for root, dirs, files in os.walk(path):
         for source_file in files:
             #print(source_file)
@@ -94,8 +95,8 @@ def get_upload_url():
     return urls
 
 @manager.command
-#python manage.py init_database
-def init_database():
+#python manage.py init_database1
+def init_database1():
     urls=get_upload_url()
     un=0
     db.drop_all()
@@ -113,21 +114,36 @@ def init_database():
 
 
 @manager.command
-#python manage.py init_database
-def init_database():
-    urls=get_upload_url()
-    un=0
+#python manage.py init_database2
+def init_database2():
     db.drop_all()
     db.create_all()
-    for i in range(0, 3):
+    for i in range(0, 100):
         db.session.add(User('user' + str(i + 1), 'a' + str(i + 1)))
-        for j in range(0, 3):
-            if un<len(urls):
-                db.session.add(Image(get_image_url(), i + 1))
-                un=un+1
-                for k in range(0, 5):
-                    db.session.add(Comment('hello' + str(k), 1 + 3 * i + j, i + 1))
+        for j in range(0, 7):
+            db.session.add(Image(get_image_url(), i + 1))
+            for k in range(0, 3):
+                db.session.add(Comment('hello' + str(k), 1 + 7 * i + j, i + 1))
 
+    db.session.commit()
+
+    for i in range(1, 16):
+        user = User.query.get(i)
+        user.username = '[new]' + user.username
+    db.session.commit()
+    for i in range(20, 30):
+        # User.query.filter_by(id=i).update({'username':'[new2]'+str(i)})
+        User.query.filter_by(id=i + 1).update({'username': '[new2]' + str(i)})
+    db.session.commit()
+    # 两种删除
+    for j in range(20, 30):
+        comment = Comment.query.get(j)
+        db.session.delete(comment)
+        # print(1,comment)
+    db.session.commit()
+
+    for j in range(40, 50):
+        Comment.query.filter_by(id=j).delete()
     db.session.commit()
 
 #     for i in range(1,16):
